@@ -92,9 +92,9 @@ async function loadProducts() {
       <div class="product">
         <h3>${p.name}</h3>
         <p>$${(p.price / 100).toFixed(2)}</p>
-        <button onclick="addToCart('${p.priceId}')">
-          Add to Cart
-        </button>
+        <button onclick="checkout()">
+  Checkout
+</button>
       </div>
     `).join("");
 }
