@@ -1,29 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>DEBUG STORE</title>
+</head>
+<body>
+
+<h1>PAGE LOADED</h1>
+<div id="status">Waiting for script...</div>
+
+<div id="products"></div>
+
 <script>
-console.log("SCRIPT STARTED");
+document.getElementById("status").innerText = "SCRIPT IS RUNNING";
 
 const API = "https://stripe-backend-sisw.onrender.com/products";
 
-document.getElementById("products").innerHTML = "JS LOADED... testing API";
-
 fetch(API)
-  .then(r => {
-    console.log("FETCH OK");
-    return r.json();
-  })
+  .then(r => r.json())
   .then(data => {
-    console.log("DATA RECEIVED", data);
+    document.getElementById("status").innerText = "DATA LOADED";
 
     document.getElementById("products").innerHTML =
-      "<h2>PRODUCTS LOADED</h2>" +
       data.map(p => `
         <div>
-          ${p.name} - $${(p.price / 100).toFixed(2)}
+          <b>${p.name}</b> - $${(p.price / 100).toFixed(2)}
         </div>
       `).join("");
   })
   .catch(err => {
-    console.error("ERROR", err);
-    document.getElementById("products").innerHTML =
+    document.getElementById("status").innerText =
       "ERROR: " + err.message;
   });
 </script>
+
+</body>
+</html>
