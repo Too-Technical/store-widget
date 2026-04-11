@@ -1,82 +1,29 @@
 <script>
+console.log("SCRIPT STARTED");
+
 const API = "https://stripe-backend-sisw.onrender.com/products";
 
-let products = [];
-let cart = [];
+document.getElementById("products").innerHTML = "JS LOADED... testing API";
 
-function addToCart(priceId) {
-  const product = products.find(p => p.priceId === priceId);
-  if (!product) return;
+fetch(API)
+  .then(r => {
+    console.log("FETCH OK");
+    return r.json();
+  })
+  .then(data => {
+    console.log("DATA RECEIVED", data);
 
-  const item = cart.find(i => i.priceId === priceId);
-
-  if (item) {
-    item.qty++;
-  } else {
-    cart.push({...product, qty: 1});
-  }
-
-  renderCart();
-}
-
-function changeQty(priceId, delta) {
-  const item = cart.find(i => i.priceId === priceId);
-  if (!item) return;
-
-  item.qty += delta;
-
-  if (item.qty <= 0) {
-    cart = cart.filter(i => i.priceId !== priceId);
-  }
-
-  renderCart();
-}
-
-function renderCart() {
-  const cartDiv = document.getElementById("cart");
-  const totalDiv = document.getElementById("total");
-
-  if (cart.length === 0) {
-    cartDiv.innerHTML = "Cart is empty";
-    totalDiv.innerText = "";
-    return;
-  }
-
-  let total = 0;
-
-  cartDiv.innerHTML = cart.map(item => {
-    total += item.price * item.qty;
-
-    return `
-      <div>
-        <b>${item.name}</b><br>
-        $${(item.price / 100).toFixed(2)} ×
-        <button onclick="changeQty('${item.priceId}', -1)">-</button>
-        ${item.qty}
-        <button onclick="changeQty('${item.priceId}', 1)">+</button>
-      </div>
-      <br>
-    `;
-  }).join("");
-
-  totalDiv.innerText = "Total: $" + (total / 100).toFixed(2);
-}
-
-async function loadProducts() {
-  const res = await fetch(API);
-  products = await res.json();
-
-  document.getElementById("products").innerHTML =
-    products.map(p => `
-      <div class="product">
-        <h3>${p.name}</h3>
-        <p>$${(p.price / 100).toFixed(2)}</p>
-        <button onclick="addToCart('${p.priceId}')">
-          Add to Cart
-        </button>
-      </div>
-    `).join("");
-}
-
-loadProducts();
+    document.getElementById("products").innerHTML =
+      "<h2>PRODUCTS LOADED</h2>" +
+      data.map(p => `
+        <div>
+          ${p.name} - $${(p.price / 100).toFixed(2)}
+        </div>
+      `).join("");
+  })
+  .catch(err => {
+    console.error("ERROR", err);
+    document.getElementById("products").innerHTML =
+      "ERROR: " + err.message;
+  });
 </script>
