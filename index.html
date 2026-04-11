@@ -21,85 +21,27 @@
 <h3 id="total"></h3>
 
 <script>
-const API = "https://stripe-backend-sisw.onrender.com/products";
-
-let products = [];
-let cart = [];
-
-function addToCart(priceId) {
-  const product = products.find(p => p.priceId === priceId);
-  if (!product) return;
-
-  const item = cart.find(i => i.priceId === priceId);
-
-  if (item) {
-    item.qty++;
-  } else {
-    cart.push({...product, qty: 1});
-  }
-
-  renderCart();
-}
-
-function changeQty(priceId, delta) {
-  const item = cart.find(i => i.priceId === priceId);
-  if (!item) return;
-
-  item.qty += delta;
-
-  if (item.qty <= 0) {
-    cart = cart.filter(i => i.priceId !== priceId);
-  }
-
-  renderCart();
-}
-
-function renderCart() {
-  const cartDiv = document.getElementById("cart");
-
+async function checkout() {
   if (cart.length === 0) {
-    cartDiv.innerHTML = "Cart is empty";
-    document.getElementById("total").innerText = "";
+    alert("Cart is empty");
     return;
   }
 
-  let total = 0;
+  const res = await fetch("https://stripe-backend-sisw.onrender.com/create-checkout-session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ items: cart })
+  });
 
-  cartDiv.innerHTML = cart.map(item => {
-    total += item.price * item.qty;
+  const data = await res.json();
 
-    return `
-      <div>
-        <b>${item.name}</b><br>
-        $${(item.price / 100).toFixed(2)} ×
-        <button onclick="changeQty('${item.priceId}', -1)">-</button>
-        ${item.qty}
-        <button onclick="changeQty('${item.priceId}', 1)">+</button>
-      </div>
-    `;
-  }).join("");
-
-  document.getElementById("total").innerText =
-    "Total: $" + (total / 100).toFixed(2);
+  if (data.url) {
+    window.location.href = data.url;
+  } else {
+    alert("Checkout failed");
+    console.log(data);
+  }
 }
-
-async function loadProducts() {
-  const res = await fetch(API);
-  products = await res.json();
-
-  document.getElementById("products").innerHTML =
-    products.map(p => `
-      <div class="product">
-        <h3>${p.name}</h3>
-        <p>$${(p.price / 100).toFixed(2)}</p>
-        <button onclick="checkout()">
-  Checkout
-</button>
-      </div>
-    `).join("");
-}
-
-loadProducts();
 </script>
 
 </body>
