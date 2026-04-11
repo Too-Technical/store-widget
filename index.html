@@ -12,27 +12,94 @@
 <div id="products"></div>
 
 <script>
-document.getElementById("status").innerText = "SCRIPT IS RUNNING";
-
 const API = "https://stripe-backend-sisw.onrender.com/products";
 
-fetch(API)
-  .then(r => r.json())
-  .then(data => {
-    document.getElementById("status").innerText = "DATA LOADED";
+let products = [];
+let cart = [];
 
-    document.getElementById("products").innerHTML =
-      data.map(p => `
-        <div>
-          <b>${p.name}</b> - $${(p.price / 100).toFixed(2)}
-        </div>
-      `).join("");
-  })
-  .catch(err => {
-    document.getElementById("status").innerText =
-      "ERROR: " + err.message;
-  });
+// Load products only
+async function loadProducts() {
+  const res = await fetch(API);
+  products = await res.json();
+
+  renderProducts();
+}
+
+// Render products ONLY (no cart logic mixed in)
+function renderProducts() {
+  const el = document.getElementById("products");
+
+  el.innerHTML = products.map(p => `
+    <div style="border:1px solid #ccc;padding:10px;margin:10px;">
+      <b>${p.name}</b><br>
+      $${(p.price / 100).toFixed(2)}<br>
+      <button onclick="addToCart('${p.priceId}')">
+        Add to Cart
+      </button>
+    </div>
+  `).join("");
+}
+
+// CART LOGIC ONLY (separate layer)
+function addToCart(priceId) {
+  const product = products.find(p => p.priceId === priceId);
+  if (!product) return;
+
+  const item = cart.find(i => i.priceId === priceId);
+
+  if (item) {
+    item.qty++;
+  } else {
+    cart.push({ ...product, qty: 1 });
+  }
+
+  renderCart();
+}
+
+function changeQty(priceId, delta) {
+  const item = cart.find(i => i.priceId === priceId);
+  if (!item) return;
+
+  item.qty += delta;
+
+  if (item.qty <= 0) {
+    cart = cart.filter(i => i.priceId !== priceId);
+  }
+
+  renderCart();
+}
+
+function renderCart() {
+  let el = document.getElementById("cart");
+  let totalEl = document.getElementById("total");
+
+  if (cart.length === 0) {
+    el.innerHTML = "Cart is empty";
+    totalEl.innerText = "";
+    return;
+  }
+
+  let total = 0;
+
+  el.innerHTML = cart.map(item => {
+    total += item.price * item.qty;
+
+    return `
+      <div>
+        <b>${item.name}</b><br>
+        $${(item.price / 100).toFixed(2)} ×
+        <button onclick="changeQty('${item.priceId}', -1)">-</button>
+        ${item.qty}
+        <button onclick="changeQty('${item.priceId}', 1)">+</button>
+      </div>
+    `;
+  }).join("");
+
+  totalEl.innerText = "Total: $" + (total / 100).toFixed(2);
+}
+
+// INIT
+loadProducts();
 </script>
-
 </body>
 </html>
