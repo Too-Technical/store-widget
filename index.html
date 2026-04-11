@@ -1,92 +1,32 @@
 <script>
 const API = "https://stripe-backend-sisw.onrender.com/products";
 
-let cart = [];
-let productList = [];
-
-function addToCart(product) {
-  const existing = cart.find(i => i.priceId === product.priceId);
-
-  if (existing) {
-    existing.qty += 1;
-  } else {
-    cart.push({...product, qty: 1});
-  }
-
-  renderCart();
-}
-
-function addToCartById(priceId) {
-  const product = productList.find(p => p.priceId === priceId);
-  if (!product) return;
-
-  addToCart(product);
-}
-
-function changeQty(priceId, delta) {
-  const item = cart.find(i => i.priceId === priceId);
-  if (!item) return;
-
-  item.qty += delta;
-
-  if (item.qty <= 0) {
-    cart = cart.filter(i => i.priceId !== priceId);
-  }
-
-  renderCart();
-}
-
-function renderCart() {
-  const cartDiv = document.getElementById("cart");
-
-  if (cart.length === 0) {
-    cartDiv.innerHTML = "Cart is empty";
-    document.getElementById("total").innerText = "";
-    return;
-  }
-
-  let total = 0;
-
-  cartDiv.innerHTML = cart.map(item => {
-    total += item.price * item.qty;
-
-    return `
-      <div>
-        <b>${item.name}</b><br>
-        $${(item.price / 100).toFixed(2)} × 
-        <button onclick="changeQty('${item.priceId}', -1)">-</button>
-        ${item.qty}
-        <button onclick="changeQty('${item.priceId}', 1)">+</button>
-      </div>
-      <br>
-    `;
-  }).join("");
-
-  document.getElementById("total").innerText =
-    "Total: $" + (total / 100).toFixed(2);
-}
-
 async function load() {
+  const app = document.getElementById("products");
+
   try {
     const res = await fetch(API);
     const products = await res.json();
 
-    productList = products;
+    let html = "";
 
-    document.getElementById("products").innerHTML =
-      products.map(p => `
+    for (let p of products) {
+      html += `
         <div style="border:1px solid #ccc;padding:10px;margin:10px;">
           <h3>${p.name}</h3>
           <p>$${(p.price / 100).toFixed(2)}</p>
-          <button onclick="addToCartById('${p.priceId}')">
+          <button onclick="alert('Working: ${p.name}')">
             Add to Cart
           </button>
         </div>
-      `).join("");
+      `;
+    }
+
+    app.innerHTML = html;
 
   } catch (e) {
-    document.getElementById("products").innerHTML =
-      "Error loading products: " + e.message;
+    app.innerHTML = "ERROR: " + e.message;
+    console.log(e);
   }
 }
 
