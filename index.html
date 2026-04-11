@@ -93,15 +93,38 @@ async function load() {
     const products = await res.json();
 
     document.getElementById("products").innerHTML =
+      let productList = [];
+
+async function load() {
+  try {
+    const res = await fetch(API);
+    const products = await res.json();
+
+    productList = products;
+
+    document.getElementById("products").innerHTML =
       products.map(p => `
         <div style="border:1px solid #ccc;padding:10px;margin:10px;">
           <h3>${p.name}</h3>
           <p>$${(p.price / 100).toFixed(2)}</p>
-          <button onclick='addToCart(${JSON.stringify(p)})'>
+          <button onclick="addToCartById('${p.priceId}')">
             Add to Cart
           </button>
         </div>
       `).join("");
+
+  } catch (e) {
+    document.getElementById("products").innerHTML =
+      "Error loading products: " + e.message;
+  }
+}
+
+function addToCartById(priceId) {
+  const product = productList.find(p => p.priceId === priceId);
+  if (!product) return;
+
+  addToCart(product);
+}.join("");
 
   } catch (e) {
     document.getElementById("products").innerHTML =
