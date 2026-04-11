@@ -2,14 +2,21 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>DEBUG STORE</title>
+  <title>Store</title>
 </head>
+
 <body>
 
-<h1>PAGE LOADED</h1>
-<div id="status">Waiting for script...</div>
+<h1>My Store</h1>
 
+<div id="status">Loading script...</div>
+
+<h2>Products</h2>
 <div id="products"></div>
+
+<h2>Cart</h2>
+<div id="cart">Cart is empty</div>
+<h3 id="total"></h3>
 
 <script>
 const API = "https://stripe-backend-sisw.onrender.com/products";
@@ -17,41 +24,45 @@ const API = "https://stripe-backend-sisw.onrender.com/products";
 let products = [];
 let cart = [];
 
-// Load products only
+// INIT SAFE CHECK
+document.getElementById("status").innerText = "SCRIPT RUNNING";
+
+// LOAD PRODUCTS
 async function loadProducts() {
-  const res = await fetch(API);
-  products = await res.json();
+  try {
+    const res = await fetch(API);
+    products = await res.json();
 
-  renderProducts();
+    renderProducts();
+    document.getElementById("status").innerText = "PRODUCTS LOADED";
+  } catch (e) {
+    document.getElementById("status").innerText = "ERROR: " + e.message;
+  }
 }
 
-// Render products ONLY (no cart logic mixed in)
+// RENDER PRODUCTS ONLY
 function renderProducts() {
-  const el = document.getElementById("products");
-
-  el.innerHTML = products.map(p => `
-    <div style="border:1px solid #ccc;padding:10px;margin:10px;">
-      <b>${p.name}</b><br>
-      $${(p.price / 100).toFixed(2)}<br>
-      <button onclick="addToCart('${p.priceId}')">
-        Add to Cart
-      </button>
-    </div>
-  `).join("");
+  document.getElementById("products").innerHTML =
+    products.map(p => `
+      <div style="border:1px solid #ccc;padding:10px;margin:10px;">
+        <b>${p.name}</b><br>
+        $${(p.price / 100).toFixed(2)}<br>
+        <button onclick="addToCart('${p.priceId}')">
+          Add to Cart
+        </button>
+      </div>
+    `).join("");
 }
 
-// CART LOGIC ONLY (separate layer)
+// CART LOGIC
 function addToCart(priceId) {
   const product = products.find(p => p.priceId === priceId);
   if (!product) return;
 
   const item = cart.find(i => i.priceId === priceId);
 
-  if (item) {
-    item.qty++;
-  } else {
-    cart.push({ ...product, qty: 1 });
-  }
+  if (item) item.qty++;
+  else cart.push({...product, qty: 1});
 
   renderCart();
 }
@@ -70,36 +81,36 @@ function changeQty(priceId, delta) {
 }
 
 function renderCart() {
-  let el = document.getElementById("cart");
-  let totalEl = document.getElementById("total");
+  const c = document.getElementById("cart");
+  const t = document.getElementById("total");
 
   if (cart.length === 0) {
-    el.innerHTML = "Cart is empty";
-    totalEl.innerText = "";
+    c.innerHTML = "Cart is empty";
+    t.innerText = "";
     return;
   }
 
   let total = 0;
 
-  el.innerHTML = cart.map(item => {
-    total += item.price * item.qty;
+  c.innerHTML = cart.map(i => {
+    total += i.price * i.qty;
 
     return `
       <div>
-        <b>${item.name}</b><br>
-        $${(item.price / 100).toFixed(2)} ×
-        <button onclick="changeQty('${item.priceId}', -1)">-</button>
-        ${item.qty}
-        <button onclick="changeQty('${item.priceId}', 1)">+</button>
+        <b>${i.name}</b><br>
+        $${(i.price / 100).toFixed(2)} ×
+        <button onclick="changeQty('${i.priceId}', -1)">-</button>
+        ${i.qty}
+        <button onclick="changeQty('${i.priceId}', 1)">-</button>
       </div>
     `;
   }).join("");
 
-  totalEl.innerText = "Total: $" + (total / 100).toFixed(2);
+  t.innerText = "Total: $" + (total / 100).toFixed(2);
 }
 
-// INIT
 loadProducts();
 </script>
+
 </body>
 </html>
