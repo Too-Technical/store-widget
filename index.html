@@ -1,22 +1,14 @@
-<!DOCTYPE html>
-<html>
-<body>
-
-<h1>TEST PAGE LOADED</h1>
-<div id="status">Script not running</div>
-
-<script>
-document.getElementById("status").innerText = "SCRIPT IS RUNNING";
-
-fetch("https://stripe-backend-sisw.onrender.com/products")
-  .then(r => r.json())
-  .then(data => {
-    document.body.innerHTML += "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
-  })
-  .catch(err => {
-    document.getElementById("status").innerText = "ERROR: " + err.message;
-  });
-</script>
-
-</body>
-</html>
+TEST PAGE LOADED
+SCRIPT IS RUNNING
+[
+  {
+    "priceId": "price_1TI2YYLGuwT4y25n9Lp0Iws3",
+    "name": "Test 2",
+    "price": 600
+  },
+  {
+    "priceId": "price_1TI2OkLGuwT4y25n267lJwLe",
+    "name": "Eclipse Seedless Hybrid Watermelon",
+    "price": 800
+  }
+]
