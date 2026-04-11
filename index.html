@@ -1,36 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Store Widget</title>
-  <style>
-    body { font-family: Arial; margin: 0; padding: 10px; }
-    .product {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 6px;
-    }
-    button {
-      padding: 6px 10px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-  <body>
-
-<div id="products">Loading products...</div>
-
-<hr>
-
-<h2>Cart</h2>
-<div id="cart">Cart is empty</div>
-<h3 id="total"></h3>
-
 <script>
 const API = "https://stripe-backend-sisw.onrender.com/products";
 
 let cart = [];
+let productList = [];
 
 function addToCart(product) {
   const existing = cart.find(i => i.priceId === product.priceId);
@@ -42,6 +14,13 @@ function addToCart(product) {
   }
 
   renderCart();
+}
+
+function addToCartById(priceId) {
+  const product = productList.find(p => p.priceId === priceId);
+  if (!product) return;
+
+  addToCart(product);
 }
 
 function changeQty(priceId, delta) {
@@ -92,14 +71,6 @@ async function load() {
     const res = await fetch(API);
     const products = await res.json();
 
-    document.getElementById("products").innerHTML =
-      let productList = [];
-
-async function load() {
-  try {
-    const res = await fetch(API);
-    const products = await res.json();
-
     productList = products;
 
     document.getElementById("products").innerHTML =
@@ -119,21 +90,5 @@ async function load() {
   }
 }
 
-function addToCartById(priceId) {
-  const product = productList.find(p => p.priceId === priceId);
-  if (!product) return;
-
-  addToCart(product);
-}.join("");
-
-  } catch (e) {
-    document.getElementById("products").innerHTML =
-      "Error loading products: " + e.message;
-  }
-}
-
 load();
 </script>
-
-</body>
-</html>
