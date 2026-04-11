@@ -1,34 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>TEST PAGE LOADED</h1>
+<div id="status">Script not running</div>
+
 <script>
-const API = "https://stripe-backend-sisw.onrender.com/products";
+document.getElementById("status").innerText = "SCRIPT IS RUNNING";
 
-async function load() {
-  const app = document.getElementById("products");
-
-  try {
-    const res = await fetch(API);
-    const products = await res.json();
-
-    let html = "";
-
-    for (let p of products) {
-      html += `
-        <div style="border:1px solid #ccc;padding:10px;margin:10px;">
-          <h3>${p.name}</h3>
-          <p>$${(p.price / 100).toFixed(2)}</p>
-          <button onclick="alert('Working: ${p.name}')">
-            Add to Cart
-          </button>
-        </div>
-      `;
-    }
-
-    app.innerHTML = html;
-
-  } catch (e) {
-    app.innerHTML = "ERROR: " + e.message;
-    console.log(e);
-  }
-}
-
-load();
+fetch("https://stripe-backend-sisw.onrender.com/products")
+  .then(r => r.json())
+  .then(data => {
+    document.body.innerHTML += "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
+  })
+  .catch(err => {
+    document.getElementById("status").innerText = "ERROR: " + err.message;
+  });
 </script>
+
+</body>
+</html>
