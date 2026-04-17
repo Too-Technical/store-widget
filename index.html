@@ -144,7 +144,7 @@ async function checkout() {
   const data = await res.json();
 
   if (data.url) {
-    window.location.href = data.url;
+    window.open(data.url, "_top");
   } else {
     alert("Checkout failed");
     console.log(data);
