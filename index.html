@@ -2,14 +2,28 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Store</title>
+  <title>My Store</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .product {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+    }
+    button {
+      padding: 6px 10px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+  </style>
 </head>
 
 <body>
 
 <h1>My Store</h1>
 
-<div id="status">Loading script...</div>
+<div id="status">Loading...</div>
 
 <h2>Products</h2>
 <div id="products"></div>
@@ -18,43 +32,37 @@
 <div id="cart">Cart is empty</div>
 <h3 id="total"></h3>
 
+<button onclick="checkout()">Checkout</button>
+
 <script>
 const API = "https://stripe-backend-sisw.onrender.com/products";
 
 let products = [];
 let cart = [];
 
-// INIT SAFE CHECK
-document.getElementById("status").innerText = "SCRIPT RUNNING";
-
-// LOAD PRODUCTS
+// Load products
 async function loadProducts() {
   try {
     const res = await fetch(API);
     products = await res.json();
 
-    renderProducts();
-    document.getElementById("status").innerText = "PRODUCTS LOADED";
-  } catch (e) {
-    document.getElementById("status").innerText = "ERROR: " + e.message;
+    document.getElementById("status").innerText = "Products Loaded";
+
+    document.getElementById("products").innerHTML =
+      products.map(p => `
+        <div class="product">
+          <b>${p.name}</b><br>
+          $${(p.price / 100).toFixed(2)}<br>
+          <button onclick="addToCart('${p.priceId}')">
+            Add to Cart
+          </button>
+        </div>
+      `).join("");
+  } catch (err) {
+    document.getElementById("status").innerText = "Error: " + err.message;
   }
 }
 
-// RENDER PRODUCTS ONLY
-function renderProducts() {
-  document.getElementById("products").innerHTML =
-    products.map(p => `
-      <div style="border:1px solid #ccc;padding:10px;margin:10px;">
-        <b>${p.name}</b><br>
-        $${(p.price / 100).toFixed(2)}<br>
-        <button onclick="addToCart('${p.priceId}')">
-          Add to Cart
-        </button>
-      </div>
-    `).join("");
-}
-
-// CART LOGIC
 function addToCart(priceId) {
   const product = products.find(p => p.priceId === priceId);
   if (!product) return;
@@ -101,12 +109,34 @@ function renderCart() {
         $${(i.price / 100).toFixed(2)} ×
         <button onclick="changeQty('${i.priceId}', -1)">-</button>
         ${i.qty}
-        <button onclick="changeQty('${i.priceId}', 1)">-</button>
+        <button onclick="changeQty('${i.priceId}', 1)">+</button>
       </div>
     `;
   }).join("");
 
   t.innerText = "Total: $" + (total / 100).toFixed(2);
+}
+
+async function checkout() {
+  if (cart.length === 0) {
+    alert("Cart is empty");
+    return;
+  }
+
+  const res = await fetch("https://stripe-backend-sisw.onrender.com/create-checkout-session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ items: cart })
+  });
+
+  const data = await res.json();
+
+  if (data.url) {
+    window.location.href = data.url;
+  } else {
+    alert("Checkout failed");
+    console.log(data);
+  }
 }
 
 loadProducts();
