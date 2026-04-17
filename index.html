@@ -35,18 +35,20 @@
 <button onclick="checkout()">Checkout</button>
 
 <script>
-const API = "https://stripe-backend-sisw.onrender.com/products";
+const API = "https://stripe-backend-api-tr87.onrender.com/products";
 
 let products = [];
 let cart = [];
 
-// Load products
+/* -----------------------------
+   LOAD PRODUCTS
+------------------------------*/
 async function loadProducts() {
   try {
     const res = await fetch(API);
     products = await res.json();
 
-    document.getElementById("status").innerText = "Products Loaded";
+    document.getElementById("status").innerText = "PRODUCTS LOADED";
 
     document.getElementById("products").innerHTML =
       products.map(p => `
@@ -58,11 +60,15 @@ async function loadProducts() {
           </button>
         </div>
       `).join("");
+
   } catch (err) {
-    document.getElementById("status").innerText = "Error: " + err.message;
+    document.getElementById("status").innerText = "ERROR: " + err.message;
   }
 }
 
+/* -----------------------------
+   CART LOGIC
+------------------------------*/
 function addToCart(priceId) {
   const product = products.find(p => p.priceId === priceId);
   if (!product) return;
@@ -117,17 +123,23 @@ function renderCart() {
   t.innerText = "Total: $" + (total / 100).toFixed(2);
 }
 
+/* -----------------------------
+   CHECKOUT (Stripe)
+------------------------------*/
 async function checkout() {
   if (cart.length === 0) {
     alert("Cart is empty");
     return;
   }
 
-  const res = await fetch("https://stripe-backend-sisw.onrender.com/create-checkout-session", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ items: cart })
-  });
+  const res = await fetch(
+    "https://stripe-backend-api-tr87.onrender.com/create-checkout-session",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: cart })
+    }
+  );
 
   const data = await res.json();
 
@@ -139,6 +151,9 @@ async function checkout() {
   }
 }
 
+/* -----------------------------
+   INIT
+------------------------------*/
 loadProducts();
 </script>
 
